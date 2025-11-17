@@ -5,7 +5,7 @@ FROM ubuntu:24.04
 # Build-time args
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=America/Los_Angeles
-ARG PLAYWRIGHT_VERSION="1.49.0"
+ARG PLAYWRIGHT_VERSION="1.56.0"
 ARG DOCKER_IMAGE_NAME_TEMPLATE="mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble"
 
 # Basic env
@@ -15,7 +15,7 @@ ENV LANG=C.UTF-8 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
-# 1) Keep Ubuntu up to date and install Node 25 + Yarn with minimal extras
+# 1) Keep Ubuntu up to date and install Node 25 + patched npm + Yarn
 RUN set -eux; \
     # bring base image to latest security fixes
     apt-get update; \
@@ -34,7 +34,9 @@ RUN set -eux; \
       > /etc/apt/sources.list.d/nodesource.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs; \
-    npm install -g yarn@1.22.22; \
+    # *** important: upgrade npm so it pulls a fixed glob version ***
+    npm install -g npm@latest yarn@1.22.22 dd-trace; \
+    npm cache clean --force; \
     # tools above are no longer needed at runtime – drop them to reduce surface
     apt-get purge -y curl wget gpg; \
     apt-get autoremove -y; \
@@ -48,7 +50,7 @@ RUN set -eux; \
     npm i playwright-core@"${PLAYWRIGHT_VERSION}"; \
     npx playwright-core mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
     # this installs browsers AND required Ubuntu libraries
-    npx playwright-core install --with-deps; \
+    npx playwright install --with-deps; \
     # cleanup
     rm -rf /var/lib/apt/lists/* /ms-playwright-agent ~/.npm; \
     chmod -R 777 /ms-playwright
