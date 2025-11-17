@@ -59,9 +59,6 @@ RUN set -eux; \
     apt-get -y dist-upgrade; \
     rm -rf /var/lib/apt/lists/*
 
-# NOTE: do NOT install Playwright globally – projects should bring their own
-# This avoids extra node packages (and their CVEs) baked into the base image.
-
 WORKDIR /work
 
 CMD ["/bin/bash"]
