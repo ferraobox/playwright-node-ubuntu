@@ -3,7 +3,7 @@
 Docker image with:
 
 - Ubuntu 24.04
-- Node.js 22 (NodeSource)
+- Node.js
 - Yarn
 - Playwright **browsers + dependencies** preinstalled
 - Non-root user: `pwuser`
@@ -11,17 +11,17 @@ Docker image with:
 
 Image name (example):
 
-`your-dockerhub-username/playwright-node22-ubuntu24.04`
+`ferraobox/playwright-node`
 
 ## Tags
 
-- `<PLAYWRIGHT_VERSION>` – Playwright version used in the image (e.g. `1.49.0`)
+- `<PLAYWRIGHT_VERSION>` – Playwright version used in the image (e.g. `1.56.0`)
 - `latest` – always points to the most recently published Playwright version
 
 Examples:
 
-- `your-dockerhub-username/playwright-node22-ubuntu24.04:1.49.0`
-- `your-dockerhub-username/playwright-node22-ubuntu24.04:latest`
+- `ferraobox/playwright-node:1.56.0`
+- `ferraobox/playwright-node:latest`
 
 ## How the versioning works
 
@@ -45,8 +45,8 @@ PLAYWRIGHT_VERSION=1.49.0
 docker build \
   --build-arg PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION} \
   --build-arg DOCKER_IMAGE_NAME_TEMPLATE="mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble" \
-  -t your-dockerhub-username/playwright-node22-ubuntu24.04:${PLAYWRIGHT_VERSION} \
-  -t your-dockerhub-username/playwright-node22-ubuntu24.04:latest \
+  -t ferraobox/playwright-node:${PLAYWRIGHT_VERSION} \
+  -t ferraobox/playwright-node:latest \
   .
 ```
 
@@ -56,7 +56,7 @@ Run a container:
 
 ```bash
 docker run --rm -it \
-  your-dockerhub-username/playwright-node22-ubuntu24.04:latest \
+  ferraobox/playwright-node:latest \
   bash
 ```
 
@@ -66,7 +66,7 @@ Run Playwright tests from a host project (mount current directory):
 docker run --rm -it \
   -v "$PWD:/work" \
   -w /work \
-  your-dockerhub-username/playwright-node22-ubuntu24.04:latest \
+  ferraobox/playwright-node:latest \
   npx playwright test
 ```
 
