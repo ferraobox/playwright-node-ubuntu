@@ -30,8 +30,7 @@ RUN DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
     apt-get install -y nodejs && \
     apt-get install -y --no-install-recommends git openssh-client && \
     npm install -g yarn && \
-    rm -rf /var/lib/apt/lists/* && \
-    adduser --disabled-password --gecos "" pwuser'
+    rm -rf /var/lib/apt/lists/*
 
 # Install playwright-core@PLAYWRIGHT_VERSION and all browsers/OS deps
 RUN DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
@@ -55,5 +54,5 @@ RUN yarn global add \
     @playwright/test
 
 WORKDIR /work
-USER pwuser
+
 CMD ["/bin/bash"]
