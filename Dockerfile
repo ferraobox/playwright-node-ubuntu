@@ -15,7 +15,7 @@ ENV LANG=C.UTF-8 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
-# 1) Keep Ubuntu up to date and install Node 25 + patched npm
+# 1) Keep Ubuntu up to date and install Node 25 + patched npm (with glob >= 11.1.0)
 RUN set -eux; \
     apt-get update; \
     apt-get -y dist-upgrade; \
@@ -32,6 +32,14 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs; \
     npm install -g npm@latest; \
+    npm_root="$(npm root -g)"; \
+    cd "${npm_root}/npm"; \
+      rm -rf node_modules/glob; \
+      npm install glob@11.1.0; \
+      cd node_modules/node-gyp; \
+        rm -rf node_modules/glob; \
+        npm install glob@11.1.0; \
+    cd /; \
     npm cache clean --force; \
     apt-get purge -y curl gpg; \
     apt-get autoremove -y; \
