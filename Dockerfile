@@ -15,7 +15,7 @@ ENV LANG=C.UTF-8 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
-# 1) Keep Ubuntu up to date and install Node 25 + npm + yarn
+# 1) Keep Ubuntu up to date and install Node 25 (with bundled npm just for build)
 RUN set -eux; \
     apt-get update; \
     apt-get -y dist-upgrade; \
@@ -24,7 +24,6 @@ RUN set -eux; \
         curl \
         gpg \
     ; \
-    \
     mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
       | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
@@ -32,31 +31,23 @@ RUN set -eux; \
       > /etc/apt/sources.list.d/nodesource.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs; \
-    npm install -g npm@latest; \
-    npm install -g yarn@latest; \
-    npm_root="$(npm root -g)"; \
-    cd "${npm_root}/npm"; \
-      # upgrade npm's own glob dependency
-      npm install glob@12.0.0; \
-      # upgrade node-gyp's nested glob as well
-      cd node_modules/node-gyp; \
-      npm install glob@12.0.0; \
-    cd /; \
-    npm cache clean --force; \
-    apt-get purge -y curl gpg; \
-    apt-get autoremove -y; \
     rm -rf /var/lib/apt/lists/*
 
-# 2) Install playwright@PLAYWRIGHT_VERSION and all browsers / system deps
+# 2) Install playwright@PLAYWRIGHT_VERSION and all browsers / system deps using npm,
 RUN set -eux; \
-    mkdir /ms-playwright /ms-playwright-agent; \
+    mkdir -p /ms-playwright /ms-playwright-agent; \
     cd /ms-playwright-agent; \
     npm init -y >/dev/null 2>&1; \
     npm install -g playwright@"${PLAYWRIGHT_VERSION}"; \
     npx playwright mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
     npx playwright install --with-deps; \
+    cd /; \
     rm -rf /ms-playwright-agent ~/.npm; \
-    chmod -R 777 /ms-playwright
+    chmod -R 777 /ms-playwright; \
+    rm -rf /usr/lib/node_modules/npm /usr/bin/npm /usr/bin/npx; \
+    apt-get purge -y curl gpg || true; \
+    apt-get autoremove -y; \
+    rm -rf /var/lib/apt/lists/*
 
 # 3) Final OS security refresh + remove high-risk media plugins (CVE-2025-3887 etc.)
 RUN set -eux; \
