@@ -15,16 +15,13 @@ ENV LANG=C.UTF-8 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
-# 1) Keep Ubuntu up to date and install Node 25 + patched npm + Yarn
+# 1) Keep Ubuntu up to date and install Node 25 + patched npm
 RUN set -eux; \
-    # bring base image to latest security fixes
     apt-get update; \
     apt-get -y dist-upgrade; \
-    # minimal tools needed just for NodeSource repo setup
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        wget \
         gpg \
     ; \
     mkdir -p /etc/apt/keyrings; \
@@ -34,11 +31,9 @@ RUN set -eux; \
       > /etc/apt/sources.list.d/nodesource.list; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs; \
-    # *** important: upgrade npm so it pulls a fixed glob version ***
-    npm install -g npm@latest yarn@1.22.22 dd-trace; \
+    npm install -g npm@latest; \
     npm cache clean --force; \
-    # tools above are no longer needed at runtime – drop them to reduce surface
-    apt-get purge -y curl wget gpg; \
+    apt-get purge -y curl gpg; \
     apt-get autoremove -y; \
     rm -rf /var/lib/apt/lists/*
 
@@ -47,18 +42,22 @@ RUN set -eux; \
     mkdir /ms-playwright /ms-playwright-agent; \
     cd /ms-playwright-agent; \
     npm init -y >/dev/null 2>&1; \
-    npm i playwright-core@"${PLAYWRIGHT_VERSION}"; \
+    npm install --no-fund --omit=dev playwright-core@"${PLAYWRIGHT_VERSION}"; \
     npx playwright-core mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
-    # this installs browsers AND required Ubuntu libraries
     npx playwright install --with-deps; \
-    # cleanup
-    rm -rf /var/lib/apt/lists/* /ms-playwright-agent ~/.npm; \
+    rm -rf /ms-playwright-agent ~/.npm; \
     chmod -R 777 /ms-playwright
 
-# 3) Final OS security refresh for libraries that Playwright just installed
+# 3) Final OS security refresh + remove high-risk media plugins (CVE-2025-3887 etc.)
 RUN set -eux; \
     apt-get update; \
     apt-get -y dist-upgrade; \
+    apt-get purge -y \
+      'gstreamer1.0-plugins-bad*' \
+      'libgstreamer-plugins-bad1.0-0' \
+      'gstreamer1.0-libav' \
+      || true; \
+    apt-get autoremove -y; \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /work
