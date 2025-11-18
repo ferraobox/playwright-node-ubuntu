@@ -37,13 +37,14 @@ RUN set -eux; \
     apt-get autoremove -y; \
     rm -rf /var/lib/apt/lists/*
 
-# 2) Install playwright-core@PLAYWRIGHT_VERSION and all browsers / system deps
+# 2) Install playwright@PLAYWRIGHT_VERSION and all browsers / system deps
 RUN set -eux; \
     mkdir /ms-playwright /ms-playwright-agent; \
     cd /ms-playwright-agent; \
     npm init -y >/dev/null 2>&1; \
-    npm install --no-fund --omit=dev playwright-core@"${PLAYWRIGHT_VERSION}"; \
-    npx playwright-core mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
+    npm install -g playwright@"${PLAYWRIGHT_VERSION}"; \
+    npm install -g @playwright/test@"${PLAYWRIGHT_VERSION}"; \
+    npx playwright mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
     npx playwright install --with-deps; \
     rm -rf /ms-playwright-agent ~/.npm; \
     chmod -R 777 /ms-playwright
