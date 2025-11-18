@@ -43,7 +43,7 @@ RUN set -eux; \
     cd /ms-playwright-agent; \
     npm init -y >/dev/null 2>&1; \
     npm install -g playwright@"${PLAYWRIGHT_VERSION}"; \
-    npm install -g @playwright/test@"${PLAYWRIGHT_VERSION}"; \
+    npm install -g @playwright/test; \
     npx playwright mark-docker-image "${DOCKER_IMAGE_NAME_TEMPLATE}"; \
     npx playwright install --with-deps; \
     rm -rf /ms-playwright-agent ~/.npm; \
