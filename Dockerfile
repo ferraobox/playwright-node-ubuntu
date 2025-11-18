@@ -32,6 +32,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends nodejs; \
     npm install -g npm@latest; \
+    npm install -g yarn@latest; \
     npm_root="$(npm root -g)"; \
     cd "${npm_root}/npm"; \
       rm -rf node_modules/glob; \
