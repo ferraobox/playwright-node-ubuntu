@@ -15,7 +15,7 @@ ENV LANG=C.UTF-8 \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
     PLAYWRIGHT_VERSION=${PLAYWRIGHT_VERSION}
 
-# 1) Keep Ubuntu up to date and install Node 25 + patched npm (with glob >= 11.1.0)
+# 1) Keep Ubuntu up to date and install Node 25 + npm + yarn
 RUN set -eux; \
     apt-get update; \
     apt-get -y dist-upgrade; \
@@ -24,6 +24,7 @@ RUN set -eux; \
         curl \
         gpg \
     ; \
+    \
     mkdir -p /etc/apt/keyrings; \
     curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
       | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
@@ -35,11 +36,11 @@ RUN set -eux; \
     npm install -g yarn@latest; \
     npm_root="$(npm root -g)"; \
     cd "${npm_root}/npm"; \
-      rm -rf node_modules/glob; \
-      npm install glob@11.1.0; \
+      # upgrade npm's own glob dependency
+      npm install glob@12.0.0; \
+      # upgrade node-gyp's nested glob as well
       cd node_modules/node-gyp; \
-        rm -rf node_modules/glob; \
-        npm install glob@11.1.0; \
+      npm install glob@12.0.0; \
     cd /; \
     npm cache clean --force; \
     apt-get purge -y curl gpg; \
